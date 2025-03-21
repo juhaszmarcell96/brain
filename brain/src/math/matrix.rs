@@ -1,5 +1,6 @@
 use std::ops::{Add, Sub, Mul, Div, Index, IndexMut, MulAssign, DivAssign}; // +, -, *, /, [], *=, /=
 use std::fmt;
+use crate::math::dimensions::Dimensions;
 
 /*
 nxm = 2x3
@@ -44,6 +45,10 @@ where
         else {
             self.data[0].len()
         }
+    }
+
+    pub fn get_dimensions(&self) -> Dimensions {
+        Dimensions { rows: self.rows(), cols: self.cols() }
     }
 
     // get element [row][col]
@@ -321,6 +326,10 @@ mod tests {
         let matrix = Matrix::<i32>::new(2, 3);
         assert_eq!(matrix.rows(), 2);
         assert_eq!(matrix.cols(), 3);
+        let dimensions = matrix.get_dimensions();
+        assert_eq!(dimensions.rows, 2);
+        assert_eq!(dimensions.cols, 3);
+        
     }
 
     #[test]
