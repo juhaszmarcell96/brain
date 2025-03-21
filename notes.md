@@ -254,3 +254,14 @@ where
 # closure / lambda
 
 In Rust, `|x| x * x` is a lambda expression, also known as a closure. It is equivalent to a lambda function in C++ `[](auto x) { return x * x; }`. While in C++ the capture is explicit `[=]`, `[&]`, `[this]`, in Rust it is inferred.
+
+# phantom data
+
+```
+pub struct RandomGenerator<T> {
+    rng: StdRng,
+    _marker: PhantomData<T>
+}
+```
+
+`PhantomData<T>` is used in the `RandomGenerator<T>` struct to indicate that the struct is associated with a type `T`, even though it doesn't actually store any value of type `T`. Rust's type system enforces strict rules about ownership and lifetimes. The `PhantomData<T>` is a zero-sized type that tells the Rust compiler that RandomGenerator has some kind of association with the type `T`, even though `T` is not explicitly stored as a field in the struct. Even though `RandomGenerator` does not hold any actual value of type `T`, it is still important to ensure that the struct is aware of the type `T`. Without `PhantomData<T>`, the compiler would think that `RandomGenerator` has no association with `T`, and might not correctly handle type-related issues (such as lifetime or variance).
