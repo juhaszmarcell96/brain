@@ -1,4 +1,5 @@
 use crate::math::matrix::Matrix;
+use crate::math::dimensions::Dimensions;
 use std::marker::PhantomData;
 use std::fmt;
 
@@ -157,6 +158,16 @@ impl<T: Default + Copy> Network<T> {
         mat.assert_valid_element(0, col);
         mat[0][col] = value;
     }
+
+    pub fn get_weights_dimension(&self, weight_layer_index: usize) -> Dimensions {
+        self.assert_valid_weight_layer(weight_layer_index);
+        self.weights[weight_layer_index].get_dimensions()
+    }
+
+    pub fn get_biases_dimension(&self, bias_layer_index: usize) -> Dimensions {
+        self.assert_valid_bias_layer(bias_layer_index);
+        self.biases[bias_layer_index].get_dimensions()
+    }
 }
 
 impl<T: fmt::Debug> fmt::Display for Network<T> {
@@ -214,6 +225,26 @@ mod tests {
         // Valid constructor should succeed without panic.
         let result = std::panic::catch_unwind(|| Network::<f64>::new(3, Box::new(mock_activation)));
         assert!(result.is_ok(), "Network::new should not panic for 3 or more layers");
+    }
+
+    #[test]
+    fn test_dimensions() {
+        let network = create_test_network();
+        assert_eq!(network.get_num_layers(), 3);
+        assert_eq!(network.get_num_weight_layers(), 2);
+        assert_eq!(network.get_num_bias_layers(), 2);
+        let dims = network.get_weights_dimension(0);
+        assert_eq!(dims.rows, 3);
+        assert_eq!(dims.cols, 4);
+        let dims = network.get_weights_dimension(1);
+        assert_eq!(dims.rows, 4);
+        assert_eq!(dims.cols, 2);
+        let dims = network.get_biases_dimension(0);
+        assert_eq!(dims.rows, 1);
+        assert_eq!(dims.cols, 4);
+        let dims = network.get_biases_dimension(1);
+        assert_eq!(dims.rows, 1);
+        assert_eq!(dims.cols, 2);
     }
 
     #[test]
