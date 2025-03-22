@@ -265,3 +265,34 @@ pub struct RandomGenerator<T> {
 ```
 
 `PhantomData<T>` is used in the `RandomGenerator<T>` struct to indicate that the struct is associated with a type `T`, even though it doesn't actually store any value of type `T`. Rust's type system enforces strict rules about ownership and lifetimes. The `PhantomData<T>` is a zero-sized type that tells the Rust compiler that RandomGenerator has some kind of association with the type `T`, even though `T` is not explicitly stored as a field in the struct. Even though `RandomGenerator` does not hold any actual value of type `T`, it is still important to ensure that the struct is aware of the type `T`. Without `PhantomData<T>`, the compiler would think that `RandomGenerator` has no association with `T`, and might not correctly handle type-related issues (such as lifetime or variance).
+
+# move vs copy
+
+- Move: If a type does not implement `Copy`, like a `String`, then passing it by value will move the ownership to the function. After that, the original value cannot be used.
+- Copy: Types that implement the `Copy` trait, like `f32`, are copied when passed by value. The original value remains available for use after the function call.
+
+Copy Semantics for `f32`: `f32` is a `Copy` type in Rust. This means that when you pass f32 by value to the function, a copy of the value is made, rather than moving the value. So, after calling the function, the original value can still be used.
+
+```
+pub fn get_factor (self) -> f32 {
+    return self.factor;
+}
+```
+
+When you define a method like this and take `self` 'by value', it means that ownership of the entire object (the instance of the struct) is moved into the method. After this method call, the instance of the struct that called this method can no longer be used because ownership has been transferred (moved) into the method. After the method completes, the self instance is moved, and you cannot use the struct anymore unless you explicitly borrow it or clone it beforehand. This means if you call `get_factor`, the struct instance calling it will be effectively "consumed" and cannot be used after the call.
+
+You should take self by reference when you don’t need ownership of the struct and want to be able to use the struct after the method is called. This is the most common case, especially for getter methods, because they typically just need to read from the struct without taking ownership. In this case, self is borrowed immutably, meaning the struct can still be used after the method call.
+
+```
+pub fn get_factor(&self) -> f32 {
+    self.factor
+}
+```
+
+You should take self by mutable reference if you need to modify the struct, but still don’t want to take ownership of it. This allows you to change the internal state of the struct while still maintaining ownership elsewhere.
+
+```
+pub fn set_factor(&mut self, factor: f32) {
+    self.factor = factor;
+}
+```
