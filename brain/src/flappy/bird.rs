@@ -1,48 +1,31 @@
-use crate::game::position::Position;
-use crate::game::dimensions::Dimensions;
+use brain::game::position::BoundingBox;
+use network::network::Network;
 
 #[derive(Debug, Clone)]
-pub struct BoundingBox {
-    pub origin: Position,
-    pub dimensions: Dimensions
+pub struct Bird {
+    pub bounding_box: BoundingBox,
+    pub brain: Network<f32>,
+    velocity: f32,
+    score: u32,
+    alive: bool
 }
 
-impl BoundingBox {
-    pub fn new (x: f32, y: f32, w: f32, h: f32) -> Self {
+impl Bird {
+    pub fn new (x: f32, y: f32, w: f32, h: f32, network: Network<f32>) -> Self {
         Self {
-            origin: Position::new(x, y),
-            dimensions: Dimensions::new(w, h),
+            bounding_box: BoundingBox::new(x, y, w, h),
+            brain: network,
+            velocity: 0.0,
+            score: 0,
+            alive: true
         }
     }
 
-    fn is_inside (&self, x: f32, y: f32) -> bool {
-        if x < self.origin.x { return false; }
-        if y < self.origin.y { return false; }
-        if x > self.origin.x + self.dimensions.w { return false; }
-        if y > self.origin.y + self.dimensions.h { return false; }
-        true
-    }
-
-    fn is_position_inside (&self, pos: Position) -> bool {
-        self.is_inside(pos.x, pos.y)
-    }
-
-    pub fn is_colliding_with (&self, other: &BoundingBox) -> bool {
-        // rather than checking if they collide, check if they are separated and negate the result
-        !((( self.origin.x +  self.dimensions.w) < other.origin.x) || // other is to the right
-          ((other.origin.x + other.dimensions.w) <  self.origin.x) || // other is to the left
-          (( self.origin.y +  self.dimensions.h) < other.origin.y) || // other is above
-          ((other.origin.y + other.dimensions.h) <  self.origin.y))   // other is below
-    }
-
-    pub fn place (&mut self, x: f32, y: f32) {
-        self.origin.x = x;
-        self.origin.y = y;
-    }
-
-    pub fn change_position (&mut self, dx: f32, dy: f32) {
-        self.origin.x += dx;
-        self.origin.y += dy;
+    pub fn reset (&mut self, x: f32, y: f32) {
+        self.score = 0;
+        self.velocity = 0.0;
+        self.alive = true;
+        self.bounding_box.place(x, y);
     }
 }
 
