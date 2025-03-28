@@ -9,7 +9,7 @@ pub struct NetworkInitializer<T> {
 
 impl<T> NetworkInitializer<T>
 where
-    T: rand::distributions::uniform::SampleUniform + std::cmp::PartialOrd + Copy + Default
+    T: rand::distr::uniform::SampleUniform + std::cmp::PartialOrd + Copy + Default
 {
     pub fn new(seed: u64, lower_limit: T, upper_limit: T) -> Self {
         if lower_limit >= upper_limit {

@@ -9,7 +9,7 @@ pub struct RandomGenerator<T> {
 
 impl<T> RandomGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform + PartialOrd + Copy,
+    T: rand::distr::uniform::SampleUniform + PartialOrd + Copy,
 {
     pub fn new() -> Self {
         let seed = rand::random::<u64>();
@@ -27,14 +27,14 @@ where
         if a >= b {
             panic!("Invalid range: a must be less than b");
         }
-        self.rng.gen_range(a..b)
+        self.rng.random_range(a..b)
     }
 }
 
 // Configuration struct
 pub struct RandomGeneratorConfig<T>
 where
-    T: rand::distributions::uniform::SampleUniform + PartialOrd + Copy,
+    T: rand::distr::uniform::SampleUniform + PartialOrd + Copy,
 {
     pub seed: u64,
     pub lower_limit: T,
@@ -43,7 +43,7 @@ where
 
 impl<T> RandomGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform + PartialOrd + Copy,
+    T: rand::distr::uniform::SampleUniform + PartialOrd + Copy,
 {
     pub fn from_config(config: RandomGeneratorConfig<T>) -> Self {
         Self {
