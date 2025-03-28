@@ -11,6 +11,7 @@ use std::fmt;
 
 */
 
+#[derive(Clone)]
 pub struct Network<T> {
     layers: Vec<Matrix<T>>,
     weights: Vec<Matrix<T>>,
