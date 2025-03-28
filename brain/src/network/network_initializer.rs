@@ -55,7 +55,7 @@ mod tests {
 
     #[test]
     fn initialize_test() {
-        let mut network = Network::<f32>::new(3, Box::new(mock_activation)).expect("Failed to create network");
+        let mut network = Network::<f32>::new(3).expect("Failed to create network");
         network.resize(0, 3);
         network.resize(1, 4);
         network.resize(2, 2);

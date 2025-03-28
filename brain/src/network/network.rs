@@ -15,18 +15,17 @@ pub struct Network<T> {
     layers: Vec<Matrix<T>>,
     weights: Vec<Matrix<T>>,
     biases: Vec<Matrix<T>>,
-    activation: Box<dyn Fn(T) -> T>,
     valid_network: bool,
     _marker: PhantomData<T>,
 }
 
 impl<T> Network<T>
 where
-    T: Default + Clone + Copy,
+    T: Default + Clone + Copy + PartialOrd + num::Zero + num::Float + num::Signed,
     T: PartialEq + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + std::ops::Mul<Output = T> + std::ops::Div<Output = T>,
     T: fmt::Debug
 {
-    pub fn new(num_layers: usize, activation: Box<dyn Fn(T) -> T>) -> Result<Self, String> {
+    pub fn new(num_layers: usize) -> Result<Self, String> {
         if num_layers < 3 {
             panic!("Less than 3 layers makes no sense");
         }
@@ -39,7 +38,6 @@ where
             layers,
             weights,
             biases,
-            activation,
             valid_network: true,
             _marker: PhantomData,
         })
@@ -87,7 +85,7 @@ where
 
         for i in 1..self.layers.len() {
             self.layers[i] = &(&self.layers[i - 1] * &self.weights[i - 1]) + &self.biases[i - 1];
-            self.layers[i].apply(&self.activation);
+            self.layers[i].apply(|x| x.max(T::zero()));
         }
 
         self.layers.last().unwrap().clone() // Return output layer
@@ -200,16 +198,13 @@ impl<T: PartialEq> PartialEq for Network<T> {
 
 #[cfg(test)]
 mod tests {
+    use num::Float;
+
     use super::*;
-    
-    // Mock activation function
-    fn mock_activation(x: f64) -> f64 {
-        x
-    }
 
     // Helper function to create a test network
     fn create_test_network() -> Network<f64> {
-        let mut network = Network::new(3, Box::new(mock_activation)).expect("Failed to create network"); // panic if could not create network
+        let mut network = Network::new(3).expect("Failed to create network"); // panic if could not create network
         network.resize(0, 3);
         network.resize(1, 4);
         network.resize(2, 2);
@@ -219,11 +214,11 @@ mod tests {
     #[test]
     fn test_constructor() {
         // Network::new() panics for invalid layers, so we catch it using should_panic.
-        let result = std::panic::catch_unwind(|| Network::<f64>::new(2, Box::new(mock_activation)));
+        let result = std::panic::catch_unwind(|| Network::<f64>::new(2));
         assert!(result.is_err(), "Network::new should panic for less than 3 layers");
 
         // Valid constructor should succeed without panic.
-        let result = std::panic::catch_unwind(|| Network::<f64>::new(3, Box::new(mock_activation)));
+        let result = std::panic::catch_unwind(|| Network::<f64>::new(3));
         assert!(result.is_ok(), "Network::new should not panic for 3 or more layers");
     }
 
@@ -309,7 +304,7 @@ mod tests {
 
     #[test]
     fn test_forward_propagation() {
-        let mut network = Network::new(3, Box::new(|x: f64| if x > 0.0 { x } else { 0.0 })).expect("Failed to create network"); // panic if could not create network
+        let mut network = Network::new(3).expect("Failed to create network"); // panic if could not create network
         network.resize(0, 30);
         network.resize(1, 100);
         network.resize(2, 10);
