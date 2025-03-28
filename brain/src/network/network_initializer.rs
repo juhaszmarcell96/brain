@@ -47,11 +47,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    
-    // Mock activation function
-    fn mock_activation(x: f32) -> f32 {
-        x
-    }
 
     #[test]
     fn initialize_test() {
