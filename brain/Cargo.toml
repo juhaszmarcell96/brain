@@ -7,9 +7,6 @@ edition = "2024"
 name = "brain"
 path = "src/lib.rs"
 
-[[bin]]
-name = "brain_bin"
-path = "src/main.rs"
-
 [dependencies]
 rand = "0.9.0"
+num = "0.4.3"
