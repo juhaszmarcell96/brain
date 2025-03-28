@@ -1,7 +1,8 @@
-use brain::game::position::BoundingBox;
-use network::network::Network;
+use game::bounding_box::BoundingBox;
+use brain::network::network::Network;
+use brain::math::matrix::Matrix;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Bird {
     pub bounding_box: BoundingBox,
     pub brain: Network<f32>,
@@ -21,63 +22,20 @@ impl Bird {
         }
     }
 
+    pub fn wanna_jump (&mut self, x_distance: f32, y_distance_1: f32, y_distance_2: f32, valocity: f32) -> bool {
+        let mut input = Matrix::<f32>::new(1, 4);
+        input[0][0] = x_distance;
+        input[0][1] = y_distance_1;
+        input[0][2] = y_distance_2;
+        input[0][3] = valocity;
+        let output = self.brain.forward(&input);
+        output[0][0] > 0.55
+    }
+
     pub fn reset (&mut self, x: f32, y: f32) {
         self.score = 0;
         self.velocity = 0.0;
         self.alive = true;
         self.bounding_box.place(x, y);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    // import everything from the parent module, the parent module being activation
-    use super::*;
-
-    #[test]
-    fn test_is_inside() {
-        let bb = BoundingBox::new(0.0, 0.0, 10.0, 10.0);
-        assert!(bb.is_inside(5.0, 5.0));
-        assert!(bb.is_inside(0.1, 9.9));
-        assert!(!bb.is_inside(-1.0, 5.0));
-        assert!(!bb.is_inside(11.0, 5.0));
-        assert!(!bb.is_inside(5.0, -1.0));
-        assert!(!bb.is_inside(5.0, 11.0));
-    }
-
-    #[test]
-    fn test_collision() {
-        let bb = BoundingBox::new(0.0, 0.0, 10.0, 10.0);
-        let mut other = BoundingBox::new(-5.0, -5.0, 2.0, 2.0);
-        assert!(!bb.is_colliding_with(&other));
-        other.origin.x = 1.0;
-        other.origin.y = 1.0;
-        assert!(bb.is_colliding_with(&other));
-        other.origin.x = 11.0;
-        other.origin.y = 11.0;
-        assert!(!bb.is_colliding_with(&other));
-        other.origin.x = 5.0;
-        other.origin.y = 5.0;
-        assert!(bb.is_colliding_with(&other));
-    }
-
-    #[test]
-    fn test_place() {
-        let mut bb = BoundingBox::new(0.0, 0.0, 10.0, 10.0);
-        assert_eq!(bb.origin.x, 0.0);
-        assert_eq!(bb.origin.y, 0.0);
-        bb.place(1.0, 2.0);
-        assert_eq!(bb.origin.x, 1.0);
-        assert_eq!(bb.origin.y, 2.0);
-    }
-
-    #[test]
-    fn test_change_position() {
-        let mut bb = BoundingBox::new(1.0, 2.0, 10.0, 10.0);
-        assert_eq!(bb.origin.x, 1.0);
-        assert_eq!(bb.origin.y, 2.0);
-        bb.change_position(1.0, 2.0);
-        assert_eq!(bb.origin.x, 2.0);
-        assert_eq!(bb.origin.y, 4.0);
     }
 }
