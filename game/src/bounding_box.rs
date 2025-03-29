@@ -1,5 +1,5 @@
-use crate::game::position::Position;
-use crate::game::dimensions::Dimensions;
+use crate::position::Position;
+use crate::dimensions::Dimensions;
 
 #[derive(Debug, Clone)]
 pub struct BoundingBox {
