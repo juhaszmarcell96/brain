@@ -46,4 +46,16 @@ impl Bird {
     pub fn is_alive (&self) -> bool {
         self.alive
     }
+
+    pub fn fall (&mut self, g : f32) {
+        self.velocity += g;
+    }
+
+    pub fn apply_physics (&mut self) {
+        self.bounding_box.change_position(0.0, self.velocity);
+    }
+
+    pub fn jump (&mut self, boost: f32) {
+        self.velocity -= boost;
+    }
 }
