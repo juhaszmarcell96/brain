@@ -2,7 +2,6 @@ pub mod bird;
 pub mod obstacle;
 
 use bird::Bird;
-use game::bounding_box::BoundingBox;
 use obstacle::Obstacles;
 use brain::math::random::RandomGenerator;
 use brain::network::network_creator::NetworkCreator;
@@ -19,13 +18,13 @@ const UPPER_OBSTACKLE_H_MIN : f32 = 5.0;
 const UPPER_OBSTACKLE_H_MAX : f32 = 20.0;
 const OBSTACLE_W : f32 = 4.0;
 
-const NUM_BIRDS : u32 = 1000;
+const NUM_BIRDS : usize = 1000;
 const BIRD_X : f32 = 10.0;
 const BIRD_Y : f32 = 20.0;
 const BIRD_W : f32 =  2.0;
 const BIRD_H : f32 =  2.0;
 
-const NUM_FITTEST : i16 = 10;
+const NUM_FITTEST : usize = 10;
 const MIN_HIDDEN_LAYERS : usize = 1;
 const MAX_HIDDEN_LAYERS : usize = 4;
 
@@ -52,7 +51,7 @@ fn main() {
     };
     let mut mutator = NetworkMutator::new(mutator_config);
     // populate birds
-    for i in 0..NUM_BIRDS {
+    for _i in 0..NUM_BIRDS {
         birds.push(Bird::new(BIRD_X, BIRD_Y, BIRD_W, BIRD_H, initializer.create(4, 1)));
     }
 
@@ -74,7 +73,7 @@ fn main() {
             Obstacles::new(SCENE_W + 3.0 * OBSTACLE_GAP_X, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y),
             Obstacles::new(SCENE_W + 4.0 * OBSTACLE_GAP_X, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y)
         ];
-        let mut current_obstacle: u32 = 0;
+        let mut current_obstacle_index: usize = 0;
         // variables to follow
         let mut current_score : u32 = 0;
         let mut obstacles_passed : u32 = 0;
@@ -98,11 +97,77 @@ fn main() {
                     *obstacle = Obstacles::new(new_x, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y);
                 }
             }
+            // collision detection and jump prediction
+            let mut someone_is_alive = false;
+            for bird in birds.iter_mut() {
+                if !bird.is_alive() { continue; }
+                let current_obstacles : &mut Obstacles = &mut obstacles[current_obstacle_index];
+                // does bird collide with the obstacles?
+                if bird.collides_with(&current_obstacles.upper) || bird.collides_with(&current_obstacles.lower) {
+                    bird.kill();
+                    continue;
+                }
+                // does bird collide with floor or ceiling?
+                if bird.is_outside(0.0, SCENE_H) {
+                    bird.kill();
+                    continue;
+                }
+                bird.increase_score();
+                someone_is_alive = true;
+                let x_dist = (current_obstacles.x() - bird.bounding_box.origin.x) / SCENE_W;
+                let y_dist_1 = (current_obstacles.upper.origin.y - bird.bounding_box.origin.y) / SCENE_H;
+                let y_dist_2 = (current_obstacles.lower.origin.y - bird.bounding_box.origin.y) / SCENE_H;
+                let velocity = bird.get_velocity() / 10.0;
+                if (current_score % JUMP_FREQUENCY) == 0 {
+                    if bird.wanna_jump(x_dist, y_dist_1, y_dist_2, velocity) {
+                        bird.jump(JUMP_BOOST);
+                    }
+                }
+            }
+            // update the current obstacle
+            if obstacles[current_obstacle_index].x() < (BIRD_X - OBSTACLE_W) {
+                current_obstacle_index += 1;
+                obstacles_passed += 1;
+                if current_obstacle_index == NUM_OBSTACLES {
+                    current_obstacle_index = 0;
+                }
+            }
+
+            // loop breaking conditions -> goal reached or everyone dead
+            if !someone_is_alive { break; }
+            if current_score > GOAL { break; }
         }
+
+        // round is over, sort birds based on score and select the fittest ones for darwinian evolution
+        birds.sort_by(|a, b| b.get_score().cmp(&a.get_score()));
+        if birds[0].get_score() > best_score {
+            best_score = birds[0].get_score();
+            best_brain = birds[0].brain.clone();
+        }
+        for i in 0..NUM_BIRDS {
+            birds[i].reset(BIRD_X, BIRD_Y); // reset the game parameters
+            // the fittest ones get to try again -> don't mutate them
+            if i > NUM_FITTEST {
+                // mutate the first third, re-initialize the second third, create new for the last third
+                // first part -> mutation of the all-time best
+                // second part -> mutation of the top N
+                // third part -> newly initialized networks
+                if i < (NUM_BIRDS / 5) {
+                    birds[i].brain = best_brain.clone();
+                    mutator.mutate(&mut birds[i].brain);
+                }
+                else if i < (NUM_BIRDS / 2) {
+                    birds[i].brain = birds[i % NUM_FITTEST].brain.clone();
+                    mutator.mutate(&mut birds[i].brain);
+                }
+                else {
+                    initializer.initialize(&mut birds[i].brain);
+                }
+            }
+        }
+        if best_score > GOAL { break; }
     }
-
-
-
+    print!("well done...")
 
 }
 
