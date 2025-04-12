@@ -7,6 +7,7 @@ use brain::math::random::RandomGenerator;
 use brain::network::network_creator::NetworkCreator;
 use brain::network::network_mutator::{NetworkMutatorConfig, NetworkMutator};
 use std::io::{self, Write};
+use std::fs::File;
 
 const SCENE_W : f32 = 100.0;
 const SCENE_H : f32 =  40.0;
@@ -36,7 +37,7 @@ const JUMP_FREQUENCY : u32 = 5;
 const GOAL : u32 = 1000000;
 const SEED : u64 = 50;
 
-fn main() {
+fn main() -> io::Result<()> {
     // random number generator for in-game random numbers, such as obstacle positions
     let mut rand: RandomGenerator<f32> = RandomGenerator::<f32>::with_seed(SEED);
     // birds
@@ -58,6 +59,23 @@ fn main() {
     let mut generation : u32 = 0;
     let mut best_score : u32 = 0;
     let mut best_brain = birds[0].brain.clone(); // store the "best brain" for later
+
+    // write to file:
+    let mut gameplay = File::create("gameplay.yaml")?;
+    writeln!(gameplay, "scene:")?;
+    writeln!(gameplay, "  x: 0")?;
+    writeln!(gameplay, "  y: 0")?;
+    writeln!(gameplay, "  w: {}", SCENE_W)?;
+    writeln!(gameplay, "  h: {}", SCENE_H)?;
+    writeln!(gameplay, "obstacle:")?;
+    writeln!(gameplay, "  y: 0")?;
+    writeln!(gameplay, "  w: {}", OBSTACLE_W)?;
+    writeln!(gameplay, "  gap: {}", OBSTACLE_GAP_Y)?;
+    writeln!(gameplay, "bird:")?;
+    writeln!(gameplay, "  x: {}", BIRD_X)?;
+    writeln!(gameplay, "  w: {}", BIRD_W)?;
+    writeln!(gameplay, "  h: {}", BIRD_H)?;
+    writeln!(gameplay, "gameplay:")?;
 
     // infinite loop for the game
     loop {
@@ -81,12 +99,17 @@ fn main() {
         loop {
             current_score += 1;
             print_game_stats(current_score, obstacles_passed, best_score, generation);
+            writeln!(gameplay, "  - current_score: {}", current_score)?;
+            writeln!(gameplay, "    best_score: {}", best_score)?;
+            writeln!(gameplay, "    birds:")?;
             for bird in birds.iter_mut() {
                 if bird.is_alive() {
                     bird.fall(GRAVITY);
                     bird.apply_physics();
+                    writeln!(gameplay, "      - y: {}", bird.bounding_box.origin.y)?;
                 }
             }
+            writeln!(gameplay, "    obstacles:")?;
             for obstacle in obstacles.iter_mut() {
                 obstacle.change_position(-OBSTACLE_VELOCITY, 0.0);
                 // did it move outside the scene?
@@ -96,6 +119,9 @@ fn main() {
                     let new_x = obstacle.x() + ((NUM_OBSTACLES - 1) as f32) * OBSTACLE_GAP_X;
                     *obstacle = Obstacles::new(new_x, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y);
                 }
+                writeln!(gameplay, "      - x: {}", obstacle.x())?;
+                writeln!(gameplay, "        h: {}", obstacle.upper.dimensions.h)?;
+                writeln!(gameplay, "        active: false")?;
             }
             // collision detection and jump prediction
             let mut someone_is_alive = false;
@@ -167,8 +193,8 @@ fn main() {
         }
         if best_score > GOAL { break; }
     }
-    print!("well done...")
-
+    print!("well done...");
+    Ok(())
 }
 
 fn print_game_stats(current_score: u32, obstacles_passed: u32, best_score: u32, generation: u32) {
