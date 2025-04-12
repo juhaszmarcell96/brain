@@ -22,12 +22,12 @@ impl Bird {
         }
     }
 
-    pub fn wanna_jump (&mut self, x_distance: f32, y_distance_1: f32, y_distance_2: f32, valocity: f32) -> bool {
+    pub fn wanna_jump (&mut self, x_distance: f32, y_distance_1: f32, y_distance_2: f32, velocity: f32) -> bool {
         let mut input = Matrix::<f32>::new(1, 4);
         input[0][0] = x_distance;
         input[0][1] = y_distance_1;
         input[0][2] = y_distance_2;
-        input[0][3] = valocity;
+        input[0][3] = velocity;
         let output = self.brain.forward(&input);
         output[0][0] > 0.55
     }
@@ -57,5 +57,25 @@ impl Bird {
 
     pub fn jump (&mut self, boost: f32) {
         self.velocity -= boost;
+    }
+
+    pub fn collides_with (&self, bb: &BoundingBox) -> bool {
+        return self.bounding_box.is_colliding_with(bb)
+    }
+
+    pub fn increase_score (&mut self) {
+        self.score += 1;
+    }
+
+    pub fn is_outside (&self, lower: f32, upper: f32) -> bool {
+        self.bounding_box.origin.y < lower || self.bounding_box.origin.y > upper
+    }
+
+    pub fn get_velocity (&self) -> f32 {
+        self.velocity
+    }
+
+    pub fn get_score (&self) -> u32 {
+        self.score
     }
 }
