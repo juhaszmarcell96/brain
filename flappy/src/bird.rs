@@ -38,4 +38,12 @@ impl Bird {
         self.alive = true;
         self.bounding_box.place(x, y);
     }
+
+    pub fn kill (&mut self) {
+        self.alive = false;
+    }
+
+    pub fn is_alive (&self) -> bool {
+        self.alive
+    }
 }
