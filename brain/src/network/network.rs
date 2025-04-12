@@ -26,7 +26,7 @@ where
     T: PartialEq + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + std::ops::Mul<Output = T> + std::ops::Div<Output = T>,
     T: fmt::Debug
 {
-    pub fn new(num_layers: usize) -> Result<Self, String> {
+    pub fn new(num_layers: usize) -> Self {
         if num_layers < 3 {
             panic!("Less than 3 layers makes no sense");
         }
@@ -35,13 +35,13 @@ where
         let weights = vec![Matrix::new(1, 1); num_layers - 1];
         let biases = vec![Matrix::new(1, 1); num_layers - 1];
         
-        Ok(Self {
+        Self {
             layers,
             weights,
             biases,
             valid_network: true,
             _marker: PhantomData,
-        })
+        }
     }
 
     pub fn reshape(&mut self, num_layers: usize) {
@@ -205,7 +205,7 @@ mod tests {
 
     // Helper function to create a test network
     fn create_test_network() -> Network<f64> {
-        let mut network = Network::new(3).expect("Failed to create network"); // panic if could not create network
+        let mut network = Network::new(3); // panic if could not create network
         network.resize(0, 3);
         network.resize(1, 4);
         network.resize(2, 2);
@@ -305,7 +305,7 @@ mod tests {
 
     #[test]
     fn test_forward_propagation() {
-        let mut network = Network::new(3).expect("Failed to create network"); // panic if could not create network
+        let mut network = Network::new(3); // panic if could not create network
         network.resize(0, 30);
         network.resize(1, 100);
         network.resize(2, 10);
