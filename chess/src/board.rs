@@ -21,7 +21,8 @@ enum Turn {
 
 pub struct Board {
     pieces: [Piece; 64],
-    turn: Turn
+    turn: Turn,
+    selected: Option<usize>
 }
 
 impl Board {
@@ -93,7 +94,8 @@ impl Board {
                 Piece::new(Pieces::WhiteKnight, 6, 7),
                 Piece::new(Pieces::WhiteRook, 7, 7)
             ],
-            turn: Turn::White
+            turn: Turn::White,
+            selected: None
         }
     }
 
@@ -107,5 +109,52 @@ impl Board {
         print!("2 {} {} {} {} {} {} {} {}\n", self.pieces[48].symbol(), self.pieces[49].symbol(), self.pieces[50].symbol(), self.pieces[51].symbol(), self.pieces[52].symbol(), self.pieces[53].symbol(), self.pieces[54].symbol(), self.pieces[55].symbol());
         print!("1 {} {} {} {} {} {} {} {}\n", self.pieces[56].symbol(), self.pieces[57].symbol(), self.pieces[58].symbol(), self.pieces[59].symbol(), self.pieces[60].symbol(), self.pieces[61].symbol(), self.pieces[62].symbol(), self.pieces[63].symbol());
         print!("  a b c d e f g h\n");
+    }
+
+    pub fn select (&mut self, col: char, row: u8) {
+        if row < 1 { panic!("row too small"); }
+        if row > 8 { panic!("row too large"); }
+        let col_int = match col {
+            'a' => 0,
+            'b' => 1,
+            'c' => 2,
+            'd' => 3,
+            'e' => 4,
+            'f' => 5,
+            'g' => 6,
+            'h' => 7,
+            _ => panic!("invalid column"),
+        };
+        let index = ((8 - row) as usize) * 8 + col_int;
+        self.selected = Some(index);
+    }
+
+    pub fn to (&mut self, col: char, row: u8) {
+        if self.selected.is_none() { panic!("nothing is selected"); }
+        if row < 1 { panic!("row too small"); }
+        if row > 8 { panic!("row too large"); }
+        let col_int = match col {
+            'a' => 0,
+            'b' => 1,
+            'c' => 2,
+            'd' => 3,
+            'e' => 4,
+            'f' => 5,
+            'g' => 6,
+            'h' => 7,
+            _ => panic!("invalid column"),
+        };
+        let index = ((8 - row) as usize) * 8 + col_int;
+        let from = self.selected.expect("no piece is selected");
+        //self.pieces[from].swap(&mut self.pieces[index]);
+        if from != index {
+            let (a, b) = self.pieces.split_at_mut(std::cmp::max(from, index));
+            if from < index {
+                a[from].swap(&mut b[0]);
+            } else {
+                b[0].swap(&mut a[index]);
+            }
+        }
+        self.selected = None;
     }
 }

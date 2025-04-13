@@ -30,6 +30,8 @@
 
 */
 
+use std::mem;
+
 #[derive(Debug)]
 pub enum Pieces {
     WhitePawn,
@@ -109,5 +111,9 @@ impl Piece {
 
     pub fn symbol (&self) -> char {
         self.piece_type.symbol()
+    }
+
+    pub fn swap (&mut self, other: &mut Piece) {
+        mem::swap(self, other);
     }
 }
