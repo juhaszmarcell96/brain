@@ -1,4 +1,4 @@
-pub mod chess;
+pub mod pieces;
 
 fn main() {
     println!("chess");
