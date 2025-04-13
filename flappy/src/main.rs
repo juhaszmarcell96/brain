@@ -83,13 +83,11 @@ fn main() -> io::Result<()> {
         mutator.set_factor(1.0 - ((best_score as f32) / (GOAL as f32)));
         generation += 1;
         // create obstacles
-        let upper_height = rand.generate(UPPER_OBSTACKLE_H_MIN, UPPER_OBSTACKLE_H_MAX);
-        let lower_y = upper_height + OBSTACLE_GAP_Y;
         let mut obstacles: [Obstacles; NUM_OBSTACLES] = [
-            Obstacles::new(SCENE_W + 1.0 * OBSTACLE_GAP_X, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y),
-            Obstacles::new(SCENE_W + 2.0 * OBSTACLE_GAP_X, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y),
-            Obstacles::new(SCENE_W + 3.0 * OBSTACLE_GAP_X, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y),
-            Obstacles::new(SCENE_W + 4.0 * OBSTACLE_GAP_X, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y)
+            Obstacles::new(SCENE_H, SCENE_W + 1.0 * OBSTACLE_GAP_X, OBSTACLE_W, rand.generate(UPPER_OBSTACKLE_H_MIN, UPPER_OBSTACKLE_H_MAX), OBSTACLE_GAP_Y),
+            Obstacles::new(SCENE_H, SCENE_W + 2.0 * OBSTACLE_GAP_X, OBSTACLE_W, rand.generate(UPPER_OBSTACKLE_H_MIN, UPPER_OBSTACKLE_H_MAX), OBSTACLE_GAP_Y),
+            Obstacles::new(SCENE_H, SCENE_W + 3.0 * OBSTACLE_GAP_X, OBSTACLE_W, rand.generate(UPPER_OBSTACKLE_H_MIN, UPPER_OBSTACKLE_H_MAX), OBSTACLE_GAP_Y),
+            Obstacles::new(SCENE_H, SCENE_W + 4.0 * OBSTACLE_GAP_X, OBSTACLE_W, rand.generate(UPPER_OBSTACKLE_H_MIN, UPPER_OBSTACKLE_H_MAX), OBSTACLE_GAP_Y)
         ];
         let mut current_obstacle_index: usize = 0;
         // variables to follow
@@ -114,10 +112,8 @@ fn main() -> io::Result<()> {
                 obstacle.change_position(-OBSTACLE_VELOCITY, 0.0);
                 // did it move outside the scene?
                 if obstacle.x() < -OBSTACLE_W {
-                    let upper_height = rand.generate(UPPER_OBSTACKLE_H_MIN, UPPER_OBSTACKLE_H_MAX);
-                    let lower_y = upper_height + OBSTACLE_GAP_Y;
-                    let new_x = obstacle.x() + ((NUM_OBSTACLES - 1) as f32) * OBSTACLE_GAP_X;
-                    *obstacle = Obstacles::new(new_x, lower_y, OBSTACLE_W, upper_height, SCENE_H - lower_y);
+                    let new_x = obstacle.x() + ((NUM_OBSTACLES) as f32) * OBSTACLE_GAP_X;
+                    *obstacle = Obstacles::new(SCENE_H, new_x, OBSTACLE_W, rand.generate(UPPER_OBSTACKLE_H_MIN, UPPER_OBSTACKLE_H_MAX), OBSTACLE_GAP_Y);
                 }
                 writeln!(gameplay, "      - x: {}", obstacle.x())?;
                 writeln!(gameplay, "        h: {}", obstacle.upper.dimensions.h)?;
