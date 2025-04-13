@@ -6,11 +6,32 @@ pub struct Obstacles {
     pub lower : BoundingBox
 }
 
+/*
+        x
+--------+-----+---------
+        |     |       ^
+        |     |       |
+      h |     |       |
+        |  w  |       |
+        +-----+       |
+                      |
+         gap         full height (fh)
+                      |
+      y +-----+       |
+        |  w  |       |
+        |     |       |
+        |     |       v
+--------+-----+---------
+
+*/
+
 impl Obstacles {
-    pub fn new (x: f32, y: f32, w: f32, h1: f32, h2: f32) -> Self {
+    pub fn new (fh: f32, x: f32, w: f32, h: f32, gap: f32) -> Self {
+        let y = h + gap;
+        let h_lower = fh - gap - h;
         Self {
-            upper: BoundingBox::new(x, 0.0, w, h1),
-            lower: BoundingBox::new(x, y, w, h2)
+            upper: BoundingBox::new(x, 0.0, w, h),
+            lower: BoundingBox::new(x, y, w, h_lower)
         }
     }
 
