@@ -106,4 +106,8 @@ impl Piece {
     pub fn value (&self) -> i8 {
         self.piece_type.value()
     }
+
+    pub fn symbol (&self) -> char {
+        self.piece_type.symbol()
+    }
 }
