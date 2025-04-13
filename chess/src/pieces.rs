@@ -31,7 +31,7 @@
 */
 
 #[derive(Debug)]
-enum Pieces {
+pub enum Pieces {
     WhitePawn,
     WhiteRook,
     WhiteKnight,
@@ -81,5 +81,29 @@ impl Pieces {
             Pieces::BlackQueen  => '♕',
             Pieces::BlackKing   => '♔'
         }
+    }
+}
+
+pub struct Piece {
+    pub piece_type: Pieces,
+    x: u8,
+    y: u8
+}
+
+impl Piece {
+    pub fn new (t: Pieces, x: u8, y: u8) -> Self {
+        Self {
+            piece_type: t,
+            x,
+            y
+        }
+    }
+
+    pub fn draw (&self) {
+        print!("{}", self.piece_type.symbol());
+    }
+
+    pub fn value (&self) -> i8 {
+        self.piece_type.value()
     }
 }
