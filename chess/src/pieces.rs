@@ -75,7 +75,7 @@ impl Pieces {
             Pieces::WhiteKnight => '♞',
             Pieces::WhiteRook   => '♜',
             Pieces::WhitePawn   => '♟',
-            Pieces::Empty       => '.',
+            Pieces::Empty       => ' ',
             Pieces::BlackPawn   => '♙',
             Pieces::BlackRook   => '♖',
             Pieces::BlackKnight => '♘',

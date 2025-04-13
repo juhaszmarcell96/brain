@@ -7,4 +7,7 @@ fn main() {
     chessboard.select('b', 1);
     chessboard.to('c', 3);
     chessboard.draw();
+    chessboard.select('d', 7);
+    chessboard.to('d', 5);
+    chessboard.draw();
 }
