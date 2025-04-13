@@ -41,7 +41,7 @@ impl NetworkMutator {
         self.factor
     }
 
-    pub fn initialize(&mut self, network: &mut Network<f32>) {
+    pub fn mutate(&mut self, network: &mut Network<f32>) {
         for layer in 0..network.get_num_weight_layers() {
             let dimensions = network.get_weights_dimension(layer);
             for row in 0..dimensions.rows {
