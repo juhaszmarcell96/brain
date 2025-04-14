@@ -133,39 +133,12 @@ impl Board {
     }
 
     pub fn select (&mut self, col: char, row: u8) {
-        if row < 1 { panic!("row too small"); }
-        if row > 8 { panic!("row too large"); }
-        let col_int = match col {
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-            _ => panic!("invalid column"),
-        };
-        let index = ((8 - row) as usize) * 8 + col_int;
+        let (_, _, index) = Board::convert_coordinates(col, row);
         self.selected = Some(index);
     }
 
     pub fn to (&mut self, col: char, row: u8) {
-        if self.selected.is_none() { panic!("nothing is selected"); }
-        if row < 1 { panic!("row too small"); }
-        if row > 8 { panic!("row too large"); }
-        let col_int = match col {
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-            _ => panic!("invalid column"),
-        };
-        let index = ((8 - row) as usize) * 8 + col_int;
+        let (_, _, index) = Board::convert_coordinates(col, row);
         let from = self.selected.expect("no piece is selected");
         if from != index {
             let (a, b) = self.pieces.split_at_mut(std::cmp::max(from, index));
