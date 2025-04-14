@@ -209,6 +209,12 @@ impl Board {
                 }
                 false
             },
+            Pieces::WhiteKnight => {
+                if to_piece.is_white() { return false; }
+                let dx = (from_x as i8 - to_x as i8).abs();
+                let dy = (from_y as i8 - to_y as i8).abs();
+                dx * dy == 2
+            }
             _=> false
         }
     }
@@ -344,6 +350,43 @@ mod tests {
                 else { assert!(!board.can_move_to(col, row)); }
             }
         }
-        
+    }
+    
+    #[test]
+    fn white_knight_move_test () {
+        let mut board = Board::new();
+        board.select('b', 8);
+        for col in "abcdefgh".chars() {
+            for row in 1..8 {
+                if col == 'a' && row == 6 { assert!(board.can_move_to(col, row)); } // single step
+                else if col == 'c' && row == 6 { assert!(board.can_move_to(col, row)); } // double step
+                else { assert!(!board.can_move_to(col, row)); }
+            }
+        }
+        //8 ♖   ♗ ♕ ♔ ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙   ♙ ♙ 
+        //6                 
+        //5                 
+        //4           ♙     
+        //3       ♘         
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.move_to('d', 3);
+        board.select('f', 7);
+        board.move_to('f', 4);
+        board.select('d', 3);
+        for col in "abcdefgh".chars() {
+            for row in 1..8 {
+                if col == 'c' && row == 1 { assert!(board.can_move_to(col, row)); }
+                else if col == 'e' && row == 1 { assert!(board.can_move_to(col, row)); }
+                else if col == 'b' && row == 2 { assert!(board.can_move_to(col, row)); }
+                else if col == 'f' && row == 2 { assert!(board.can_move_to(col, row)); }
+                else if col == 'b' && row == 4 { assert!(board.can_move_to(col, row)); }
+                else if col == 'c' && row == 5 { assert!(board.can_move_to(col, row)); }
+                else if col == 'e' && row == 5 { assert!(board.can_move_to(col, row)); }
+                else { assert!(!board.can_move_to(col, row)); }
+            }
+        }
     }
 }
