@@ -101,6 +101,9 @@ impl Piece {
         }
     }
 
+    pub fn get_x (&self) -> u8 { self.x }
+    pub fn get_y (&self) -> u8 { self.y }
+
     pub fn draw (&self) {
         print!("{}", self.piece_type.symbol());
     }
@@ -113,7 +116,8 @@ impl Piece {
         self.piece_type.symbol()
     }
 
-    pub fn swap (&mut self, other: &mut Piece) {
+    pub fn move_to (&mut self, other: &mut Piece) {
         mem::swap(self, other);
     }
+
 }

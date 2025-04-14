@@ -115,6 +115,23 @@ impl Board {
         print!("  a b c d e f g h\n\n");
     }
 
+    pub fn convert_coordinates (col: char, row: u8) -> (u8, u8, usize) {
+        if row < 1 { panic!("row too small"); }
+        if row > 8 { panic!("row too large"); }
+        let col_int = match col {
+            'a' => 0,
+            'b' => 1,
+            'c' => 2,
+            'd' => 3,
+            'e' => 4,
+            'f' => 5,
+            'g' => 6,
+            'h' => 7,
+            _ => panic!("invalid column"),
+        };
+        (col_int, 8 - row, ((8 - row) as usize) * 8 + (col_int as usize))
+    }
+
     pub fn select (&mut self, col: char, row: u8) {
         if row < 1 { panic!("row too small"); }
         if row > 8 { panic!("row too large"); }
@@ -150,15 +167,26 @@ impl Board {
         };
         let index = ((8 - row) as usize) * 8 + col_int;
         let from = self.selected.expect("no piece is selected");
-        //self.pieces[from].swap(&mut self.pieces[index]);
         if from != index {
             let (a, b) = self.pieces.split_at_mut(std::cmp::max(from, index));
             if from < index {
-                a[from].swap(&mut b[0]);
+                a[from].move_to(&mut b[0]);
             } else {
-                b[0].swap(&mut a[index]);
+                b[0].move_to(&mut a[index]);
             }
         }
         self.selected = None;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn coordinate_conversion_test () {
+        assert_eq!(Board::convert_coordinates('a', 8), (0, 0, 0));
+        assert_eq!(Board::convert_coordinates('h', 1), (7, 7, 63));
+        assert_eq!(Board::convert_coordinates('c', 3), (2, 5, 42));
     }
 }
