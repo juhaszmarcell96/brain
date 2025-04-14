@@ -167,6 +167,7 @@ impl Board {
     pub fn can_move_to (&self, col: char, row: u8) -> bool {
         let from_index = self.selected.expect("no piece is selected");
         let (_, _, to_index) = Board::convert_coordinates(col, row);
+        if from_index == to_index { return false; }
         let from_piece = &self.pieces[from_index];
         let to_piece = &self.pieces[to_index];
         let from_x = from_piece.get_x();
@@ -178,9 +179,7 @@ impl Board {
 
         match from_piece.piece_type {
             Pieces::WhitePawn => {
-                debug_log!("moving a white pawn...");
                 if to_piece.is_empty() {
-                    debug_log!("...to an empty space");
                     // white pawn can move to an empty place:
                     //     - if it is in the same column and in the next row
                     //     - if it is in the same column and in row 3, the pawn is in row 1, and the place in between is empty
@@ -199,15 +198,59 @@ impl Board {
                     }
                     return false;
                 }
-                else {
-                    // white
-                    return false;
+                // white
+                false
+            },
+            Pieces::WhiteRook => {
+                // move to empty space or take black piece
+                if to_piece.is_empty() || to_piece.is_black() {
+                    if from_x == to_x { return self.is_clear_vertical(from_x, from_y, to_y); }
+                    if from_y == to_y { return self.is_clear_horizontal(from_y, from_x, to_x); }
                 }
+                false
             },
             _=> false
         }
     }
 
+    fn is_clear_horizontal(&self, y: u8, x1: u8, x2: u8) -> bool {
+        let (start, end) = if x1 < x2 { (x1 + 1, x2) } else { (x2 + 1, x1) };
+        for x in start..end {
+            let idx = Board::convert_coordinates_to_index(x, y);
+            if self.pieces[idx].piece_type != Pieces::Empty {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn is_clear_vertical(&self, x: u8, y1: u8, y2: u8) -> bool {
+        let (start, end) = if y1 < y2 { (y1 + 1, y2) } else { (y2 + 1, y1) };
+        for y in start..end {
+            let idx = Board::convert_coordinates_to_index(x, y);
+            if self.pieces[idx].piece_type != Pieces::Empty {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn is_clear_diagonal(&self, from_x: u8, from_y: u8, to_x: u8, to_y: u8) -> bool {
+        let dx = if to_x > from_x { 1 } else { -1 };
+        let dy = if to_y > from_y { 1 } else { -1 };
+        let mut x = from_x as i8 + dx;
+        let mut y = from_y as i8 + dy;
+
+        while x != to_x as i8 && y != to_y as i8 {
+            let idx = Board::convert_coordinates_to_index(x as u8, y as u8);
+            if self.pieces[idx].piece_type != Pieces::Empty {
+                return false;
+            }
+            x += dx;
+            y += dy;
+        }
+        true
+    }
 
 }
 
@@ -236,7 +279,7 @@ mod tests {
         board.select('e', 7);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
-                debug_log!("col {} row {}", col, row);
+                //debug_log!("col {} row {}", col, row);
                 if col == 'e' && row == 6 { assert!(board.can_move_to(col, row)); } // single step
                 else if col == 'e' && row == 5 { assert!(board.can_move_to(col, row)); } // double step
                 else { assert!(!board.can_move_to(col, row)); }
@@ -246,7 +289,7 @@ mod tests {
         board.select('e', 5);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
-                debug_log!("col {} row {}", col, row);
+                //debug_log!("col {} row {}", col, row);
                 if col == 'e' && row == 4 { assert!(board.can_move_to(col, row)); } // single step
                 else { assert!(!board.can_move_to(col, row)); }
             }
@@ -255,11 +298,52 @@ mod tests {
         board.select('e', 3);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
-                debug_log!("col {} row {}", col, row);
+                //debug_log!("col {} row {}", col, row);
                 if col == 'd' && row == 2 { assert!(board.can_move_to(col, row)); } // single step
                 else if col == 'f' && row == 2 { assert!(board.can_move_to(col, row)); } // double step
                 else { assert!(!board.can_move_to(col, row)); }
             }
         }
+    }
+    
+    #[test]
+    fn white_rook_move_test () {
+        let mut board = Board::new();
+        board.select('a', 8);
+        for col in "abcdefgh".chars() {
+            for row in 1..8 {
+                // cannot move anywhere from the initial position
+                assert!(!board.can_move_to(col, row));
+            }
+        }
+        //8   ♘ ♗ ♕ ♔   ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6                 
+        //5   ♞   ♖     ♗   
+        //4                 
+        //3                 
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜   ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.move_to('d', 5);
+        board.select('b', 1);
+        board.move_to('b', 5);
+        board.select('f', 8);
+        board.move_to('g', 5);
+        board.select('d', 5);
+        for col in "abcdefgh".chars() {
+            for row in 1..8 {
+                if col == 'd' && row == 6 { assert!(board.can_move_to(col, row)); }
+                else if col == 'd' && row == 4 { assert!(board.can_move_to(col, row)); }
+                else if col == 'd' && row == 3 { assert!(board.can_move_to(col, row)); }
+                else if col == 'd' && row == 2 { assert!(board.can_move_to(col, row)); }
+                else if col == 'b' && row == 5 { assert!(board.can_move_to(col, row)); }
+                else if col == 'c' && row == 5 { assert!(board.can_move_to(col, row)); }
+                else if col == 'e' && row == 5 { assert!(board.can_move_to(col, row)); }
+                else if col == 'f' && row == 5 { assert!(board.can_move_to(col, row)); }
+                else { assert!(!board.can_move_to(col, row)); }
+            }
+        }
+        
     }
 }
