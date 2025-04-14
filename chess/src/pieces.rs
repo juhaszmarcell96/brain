@@ -32,7 +32,7 @@
 
 use std::mem;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Pieces {
     WhitePawn,
     WhiteRook,
@@ -117,7 +117,7 @@ impl Piece {
     }
 
     pub fn move_to (&mut self, other: &mut Piece) {
-        mem::swap(self, other);
+        mem::swap(&mut self.piece_type, &mut other.piece_type);
     }
 
 }

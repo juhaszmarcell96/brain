@@ -7,12 +7,6 @@ use regex::Regex;
 fn main() {
     let mut chessboard = board::Board::new();
     chessboard.draw();
-    chessboard.select('b', 1);
-    chessboard.to('c', 3);
-    chessboard.draw();
-    chessboard.select('d', 7);
-    chessboard.to('d', 5);
-    chessboard.draw();
 
     let re = Regex::new(r"^([a-h])\s?([1-8])\s+to\s+([a-h])\s?([1-8])$").unwrap();
     loop {
@@ -29,7 +23,11 @@ fn main() {
 
             //println!("parsed move: from {}{} to {}{}", from_col, from_row, to_col, to_row);
             chessboard.select(from_col, from_row);
-            chessboard.to(to_col, to_row);
+            if !chessboard.can_move_to(to_col, to_row) {
+                println!("invalid move");
+                continue;
+            }
+            chessboard.move_to(to_col, to_row);
             chessboard.draw();
         }
         else {
