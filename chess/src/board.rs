@@ -156,17 +156,12 @@ impl Board {
     }
 
     pub fn move_to (&mut self, col: char, row: u8) {
-        let (_, _, index) = Board::convert_coordinates(col, row);
-        let from = self.selected.expect("no piece is selected");
-        if from != index {
-            let (a, b) = self.pieces.split_at_mut(std::cmp::max(from, index));
-            if from < index {
-                a[from].move_to(&mut b[0]);
-            } else {
-                b[0].move_to(&mut a[index]);
-            }
-        }
+        let (_, _, to_index) = Board::convert_coordinates(col, row);
+        let from_index = self.selected.expect("no piece is selected");
         self.selected = None;
+        if from_index == to_index { return; }
+        self.pieces[to_index].piece_type = self.pieces[from_index].piece_type;
+        self.pieces[from_index].piece_type = Pieces::Empty;
     }
 
     pub fn can_move_to (&self, col: char, row: u8) -> bool {
@@ -184,25 +179,35 @@ impl Board {
         match from_piece.piece_type {
             Pieces::WhitePawn => {
                 debug_log!("moving a white pawn...");
-                match to_piece.piece_type {
-                    Pieces::Empty => {
-                        debug_log!("...to an empty space");
-                        // white pawn can move to an empty place:
-                        //     - if it is in the same column and in the next row
-                        //     - if it is in the same column and in row 3, the pawn is in row 1, and the place in between is empty
-                        if from_x != to_x { return false; } // cannot step onto an empty field not in the same column
-                        if from_y >= to_y { return false; } // can only step to a row with larger index
-                        if from_y + 1 == to_y { return true; }
-                        if (from_y != 1) || (to_y != 3) { return false; }
-                        if self.pieces[Board::convert_coordinates_to_index(from_x, from_y + 1)].piece_type == Pieces::Empty { return true; }
-                        false
-                    },
-                    _ => false
+                if to_piece.is_empty() {
+                    debug_log!("...to an empty space");
+                    // white pawn can move to an empty place:
+                    //     - if it is in the same column and in the next row
+                    //     - if it is in the same column and in row 3, the pawn is in row 1, and the place in between is empty
+                    if from_x != to_x { return false; } // cannot step onto an empty field not in the same column
+                    if from_y >= to_y { return false; } // can only step to a row with larger index
+                    if from_y + 1 == to_y { return true; }
+                    if (from_y != 1) || (to_y != 3) { return false; }
+                    if self.pieces[Board::convert_coordinates_to_index(from_x, from_y + 1)].piece_type == Pieces::Empty { return true; }
+                    return false
+                }
+                else if to_piece.is_black() {
+                    // move diagonally and capture another piece
+                    if (to_y == from_y + 1) && ((to_x == from_x + 1) || (to_x == from_x - 1)) {
+                        return true;
+                    }
+                    return false;
+                }
+                else {
+                    // white
+                    return false;
                 }
             },
             _=> false
         }
     }
+
+
 }
 
 #[cfg(test)]

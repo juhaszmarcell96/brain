@@ -30,9 +30,7 @@
 
 */
 
-use std::mem;
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Pieces {
     WhitePawn,
     WhiteRook,
@@ -69,19 +67,19 @@ impl Pieces {
     }
     fn symbol(&self) -> char {
         match self {
-            Pieces::WhiteKing   => '♚',
-            Pieces::WhiteQueen  => '♛',
-            Pieces::WhiteBishop => '♝',
-            Pieces::WhiteKnight => '♞',
-            Pieces::WhiteRook   => '♜',
-            Pieces::WhitePawn   => '♟',
+            Pieces::WhiteKing   => '♔',
+            Pieces::WhiteQueen  => '♕',
+            Pieces::WhiteBishop => '♗',
+            Pieces::WhiteKnight => '♘',
+            Pieces::WhiteRook   => '♖',
+            Pieces::WhitePawn   => '♙',
             Pieces::Empty       => ' ',
-            Pieces::BlackPawn   => '♙',
-            Pieces::BlackRook   => '♖',
-            Pieces::BlackKnight => '♘',
-            Pieces::BlackBishop => '♗',
-            Pieces::BlackQueen  => '♕',
-            Pieces::BlackKing   => '♔'
+            Pieces::BlackPawn   => '♟',
+            Pieces::BlackRook   => '♜',
+            Pieces::BlackKnight => '♞',
+            Pieces::BlackBishop => '♝',
+            Pieces::BlackQueen  => '♛',
+            Pieces::BlackKing   => '♚'
         }
     }
 }
@@ -115,9 +113,30 @@ impl Piece {
     pub fn symbol (&self) -> char {
         self.piece_type.symbol()
     }
-
-    pub fn move_to (&mut self, other: &mut Piece) {
-        mem::swap(&mut self.piece_type, &mut other.piece_type);
+    
+    pub fn is_black (&self) -> bool {
+        self.piece_type == Pieces::BlackPawn ||
+        self.piece_type == Pieces::BlackRook ||
+        self.piece_type == Pieces::BlackKnight ||
+        self.piece_type == Pieces::BlackBishop ||
+        self.piece_type == Pieces::BlackQueen ||
+        self.piece_type == Pieces::BlackKing
+    }
+    
+    pub fn is_white (&self) -> bool {
+        self.piece_type == Pieces::WhitePawn ||
+        self.piece_type == Pieces::WhiteRook ||
+        self.piece_type == Pieces::WhiteKnight ||
+        self.piece_type == Pieces::WhiteBishop ||
+        self.piece_type == Pieces::WhiteQueen ||
+        self.piece_type == Pieces::WhiteKing
+    }
+    
+    pub fn is_empty (&self) -> bool {
+        self.piece_type == Pieces::Empty
     }
 
+    pub fn capture (&mut self) {
+        self.piece_type = Pieces::Empty;
+    }
 }
