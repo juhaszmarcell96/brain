@@ -23,6 +23,7 @@ macro_rules! debug_log {
     };
 }
 
+#[derive(PartialEq)]
 enum Turn {
     White,
     Black
@@ -30,6 +31,7 @@ enum Turn {
 
 pub struct Board {
     pieces: [Piece; 64],
+    ignore_turn: bool,
     turn: Turn,
     selected: Option<usize>
 }
@@ -103,6 +105,7 @@ impl Board {
                 Piece::new(Pieces::BlackKnight, 6, 7),
                 Piece::new(Pieces::BlackRook, 7, 7)
             ],
+            ignore_turn: false,
             turn: Turn::White,
             selected: None
         }
@@ -162,6 +165,18 @@ impl Board {
         if from_index == to_index { return; }
         self.pieces[to_index].piece_type = self.pieces[from_index].piece_type;
         self.pieces[from_index].piece_type = Pieces::Empty;
+        // flip the turn -> assume correct usage (move was checked with 'can_move_to' beforehand
+        self.flip_turn();
+
+    }
+
+    fn flip_turn (&mut self) {
+        if self.turn == Turn::White { self.turn = Turn::Black; }
+        else { self.turn = Turn::White; }
+    }
+
+    pub fn set_ignore_turn (&mut self, ignore: bool) {
+        self.ignore_turn = ignore;
     }
 
     pub fn can_move_to (&self, col: char, row: u8) -> bool {
@@ -176,6 +191,12 @@ impl Board {
         let to_y = to_piece.get_y();
 
         debug_log!("moving from [{};{}] to [{};{}]", from_x, from_y, to_x, to_y);
+
+        if from_piece.is_empty() { return false; }
+        if !self.ignore_turn {
+            if (self.turn == Turn::White) && from_piece.is_black() { return false; }
+            if (self.turn == Turn::Black) && from_piece.is_white() { return false; }
+        }
 
         match from_piece.piece_type {
             Pieces::WhitePawn => {
@@ -302,6 +323,7 @@ mod tests {
     #[test]
     fn white_pawn_move_test () {
         let mut board = Board::new();
+        board.set_ignore_turn(true);
         board.select('e', 7);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -335,6 +357,7 @@ mod tests {
     #[test]
     fn white_rook_move_test () {
         let mut board = Board::new();
+        board.set_ignore_turn(true);
         board.select('a', 8);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -375,6 +398,7 @@ mod tests {
     #[test]
     fn white_knight_move_test () {
         let mut board = Board::new();
+        board.set_ignore_turn(true);
         board.select('b', 8);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -413,6 +437,7 @@ mod tests {
     #[test]
     fn white_bishop_move_test () {
         let mut board = Board::new();
+        board.set_ignore_turn(true);
         board.select('c', 8);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -453,6 +478,7 @@ mod tests {
     #[test]
     fn white_queen_move_test () {
         let mut board = Board::new();
+        board.set_ignore_turn(true);
         board.select('d', 8);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -505,6 +531,7 @@ mod tests {
     #[test]
     fn white_king_move_test () {
         let mut board = Board::new();
+        board.set_ignore_turn(true);
         board.select('e', 8);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
