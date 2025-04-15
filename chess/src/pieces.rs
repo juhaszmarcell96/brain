@@ -86,6 +86,7 @@ impl Pieces {
 
 pub struct Piece {
     pub piece_type: Pieces,
+    pub moved: bool,
     x: u8,
     y: u8
 }
@@ -94,6 +95,7 @@ impl Piece {
     pub fn new (t: Pieces, x: u8, y: u8) -> Self {
         Self {
             piece_type: t,
+            moved: false,
             x,
             y
         }
