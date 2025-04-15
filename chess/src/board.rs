@@ -164,7 +164,9 @@ impl Board {
         self.selected = None;
         if from_index == to_index { return; }
         self.pieces[to_index].piece_type = self.pieces[from_index].piece_type;
+        self.pieces[to_index].moved = true;
         self.pieces[from_index].piece_type = Pieces::Empty;
+        self.pieces[from_index].moved = false;
         // flip the turn -> assume correct usage (move was checked with 'can_move_to' beforehand
         self.flip_turn();
 
