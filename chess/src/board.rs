@@ -300,6 +300,15 @@ impl Board {
                 }
                 false
             },
+            Pieces::BlackQueen => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                if from_x == to_x { return self.is_clear_vertical(from_x, from_y, to_y); }
+                if from_y == to_y { return self.is_clear_horizontal(from_y, from_x, to_x); }
+                if (from_x as i8 - to_x as i8).abs() == (from_y as i8 - to_y as i8).abs() {
+                    return self.is_clear_diagonal(from_x, from_y, to_x, to_y);
+                }
+                false
+            },
             }
             _=> false
         }
