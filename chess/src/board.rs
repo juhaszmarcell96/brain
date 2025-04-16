@@ -257,6 +257,63 @@ impl Board {
                 let dx = (from_x as i8 - to_x as i8).abs();
                 let dy = (from_y as i8 - to_y as i8).abs();
                 dx <= 1 && dy <= 1
+            },
+            Pieces::BlackPawn => {
+                if to_piece.is_empty() {
+                    // black pawn can move to an empty place:
+                    //     - if it is in the same column and in the next row
+                    //     - if it is in the same column and in row 4, the pawn is in row 6, and the place in between is empty
+                    if from_x != to_x { return false; } // cannot step onto an empty field not in the same column
+                    if from_y <= to_y { return false; } // can only step to a row with smaller index
+                    if from_y - 1 == to_y { return true; }
+                    if (from_y != 6) || (to_y != 4) { return false; }
+                    if self.pieces[Board::convert_coordinates_to_index(from_x, from_y - 1)].piece_type == Pieces::Empty { return true; }
+                    return false
+                }
+                else if to_piece.is_black() {
+                    // move diagonally and capture another piece
+                    if to_y == from_y - 1 {
+                        if (from_x != 7) && (to_x == from_x + 1) { return true; }
+                        if (from_x != 0) && (to_x == from_x - 1) { return true; }
+                    }
+                    return false;
+                }
+                // black
+                false
+            },
+            Pieces::BlackRook => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                if from_x == to_x { return self.is_clear_vertical(from_x, from_y, to_y); }
+                if from_y == to_y { return self.is_clear_horizontal(from_y, from_x, to_x); }
+                false
+            },
+            Pieces::BlackKnight => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                let dx = (from_x as i8 - to_x as i8).abs();
+                let dy = (from_y as i8 - to_y as i8).abs();
+                dx * dy == 2
+            },
+            Pieces::BlackBishop => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                if (from_x as i8 - to_x as i8).abs() == (from_y as i8 - to_y as i8).abs() {
+                    return self.is_clear_diagonal(from_x, from_y, to_x, to_y);
+                }
+                false
+            },
+            Pieces::BlackQueen => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                if from_x == to_x { return self.is_clear_vertical(from_x, from_y, to_y); }
+                if from_y == to_y { return self.is_clear_horizontal(from_y, from_x, to_x); }
+                if (from_x as i8 - to_x as i8).abs() == (from_y as i8 - to_y as i8).abs() {
+                    return self.is_clear_diagonal(from_x, from_y, to_x, to_y);
+                }
+                false
+            },
+            Pieces::BlackKing => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                let dx = (from_x as i8 - to_x as i8).abs();
+                let dy = (from_y as i8 - to_y as i8).abs();
+                dx <= 1 && dy <= 1
             }
             _=> false
         }
