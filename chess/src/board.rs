@@ -281,6 +281,12 @@ impl Board {
                 // black
                 false
             },
+            Pieces::BlackRook => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                if from_x == to_x { return self.is_clear_vertical(from_x, from_y, to_y); }
+                if from_y == to_y { return self.is_clear_horizontal(from_y, from_x, to_x); }
+                false
+            },
             }
             _=> false
         }
