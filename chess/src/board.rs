@@ -287,6 +287,12 @@ impl Board {
                 if from_y == to_y { return self.is_clear_horizontal(from_y, from_x, to_x); }
                 false
             },
+            Pieces::BlackKnight => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                let dx = (from_x as i8 - to_x as i8).abs();
+                let dy = (from_y as i8 - to_y as i8).abs();
+                dx * dy == 2
+            },
             }
             _=> false
         }
