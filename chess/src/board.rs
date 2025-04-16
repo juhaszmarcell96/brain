@@ -293,6 +293,13 @@ impl Board {
                 let dy = (from_y as i8 - to_y as i8).abs();
                 dx * dy == 2
             },
+            Pieces::BlackBishop => {
+                if to_piece.is_black() { return false; } // cannot take black piece
+                if (from_x as i8 - to_x as i8).abs() == (from_y as i8 - to_y as i8).abs() {
+                    return self.is_clear_diagonal(from_x, from_y, to_x, to_y);
+                }
+                false
+            },
             }
             _=> false
         }
