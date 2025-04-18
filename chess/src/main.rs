@@ -1,5 +1,6 @@
 pub mod pieces;
 pub mod board;
+pub mod coordinate;
 
 use std::io::{self, Write};
 use regex::Regex;

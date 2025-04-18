@@ -13,6 +13,7 @@
 */
 
 use crate::pieces::{Pieces, Piece};
+use crate::coordinate::Coordinate;
 
 macro_rules! debug_log {
     ($($arg:tt)*) => {
@@ -127,35 +128,9 @@ impl Board {
         print!("  a b c d e f g h\n\n");
     }
 
-    fn convert_coordinates (col: char, row: u8) -> (u8, u8, usize) {
-        if row < 1 { panic!("row too small"); }
-        if row > 8 { panic!("row too large"); }
-        let col_int = match col {
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-            _ => panic!("invalid column"),
-        };
-        (col_int, 8 - row, ((8 - row) as usize) * 8 + (col_int as usize))
-    }
-
-    fn convert_index_to_coordinates (index: usize) -> (u8, u8) {
-        if index > 63 { panic!("invalid index"); }
-        ((index as u8) % 8, (index as u8) / 8)
-    }
-
-    fn convert_coordinates_to_index (x: u8, y: u8) -> usize {
-        (y as usize) * 8 + (x as usize)
-    }
-
     pub fn teleport (&mut self, from_col: char, from_row: u8, to_col: char, to_row: u8) {
-        let (_, _, from_index) = Board::convert_coordinates(from_col, from_row);
-        let (_, _, to_index) = Board::convert_coordinates(to_col, to_row);
+        let (_, _, from_index) = Coordinate::convert_coordinates(from_col, from_row);
+        let (_, _, to_index) = Coordinate::convert_coordinates(to_col, to_row);
         if from_index == to_index { return; }
         self.pieces[to_index].piece_type = self.pieces[from_index].piece_type;
         self.pieces[to_index].moved = true;
@@ -165,12 +140,12 @@ impl Board {
     }
 
     pub fn select (&mut self, col: char, row: u8) {
-        let (_, _, index) = Board::convert_coordinates(col, row);
+        let (_, _, index) = Coordinate::convert_coordinates(col, row);
         self.selected = Some(index);
     }
 
     pub fn move_to (&mut self, col: char, row: u8) {
-        let (_, _, to_index) = Board::convert_coordinates(col, row);
+        let (_, _, to_index) = Coordinate::convert_coordinates(col, row);
         let from_index = self.selected.expect("no piece is selected");
         self.selected = None;
         if from_index == to_index { return; }
@@ -194,7 +169,7 @@ impl Board {
 
     pub fn can_move_to (&self, col: char, row: u8) -> bool {
         let from_index = self.selected.expect("no piece is selected");
-        let (_, _, to_index) = Board::convert_coordinates(col, row);
+        let (_, _, to_index) = Coordinate::convert_coordinates(col, row);
         if from_index == to_index { return false; }
         let from_piece = &self.pieces[from_index];
         let to_piece = &self.pieces[to_index];
@@ -221,7 +196,7 @@ impl Board {
                     if from_y >= to_y { return false; } // can only step to a row with larger index
                     if from_y + 1 == to_y { return true; }
                     if (from_y != 1) || (to_y != 3) { return false; }
-                    if self.pieces[Board::convert_coordinates_to_index(from_x, from_y + 1)].piece_type == Pieces::Empty { return true; }
+                    if self.pieces[Coordinate::convert_coordinates_to_index(from_x, from_y + 1)].piece_type == Pieces::Empty { return true; }
                     return false
                 }
                 else if to_piece.is_black() {
@@ -278,7 +253,7 @@ impl Board {
                     if from_y <= to_y { return false; } // can only step to a row with smaller index
                     if from_y - 1 == to_y { return true; }
                     if (from_y != 6) || (to_y != 4) { return false; }
-                    if self.pieces[Board::convert_coordinates_to_index(from_x, from_y - 1)].piece_type == Pieces::Empty { return true; }
+                    if self.pieces[Coordinate::convert_coordinates_to_index(from_x, from_y - 1)].piece_type == Pieces::Empty { return true; }
                     return false
                 }
                 else if to_piece.is_white() {
@@ -333,7 +308,7 @@ impl Board {
     fn is_clear_horizontal(&self, y: u8, x1: u8, x2: u8) -> bool {
         let (start, end) = if x1 < x2 { (x1 + 1, x2) } else { (x2 + 1, x1) };
         for x in start..end {
-            let idx = Board::convert_coordinates_to_index(x, y);
+            let idx = Coordinate::convert_coordinates_to_index(x, y);
             if self.pieces[idx].piece_type != Pieces::Empty {
                 return false;
             }
@@ -344,7 +319,7 @@ impl Board {
     fn is_clear_vertical(&self, x: u8, y1: u8, y2: u8) -> bool {
         let (start, end) = if y1 < y2 { (y1 + 1, y2) } else { (y2 + 1, y1) };
         for y in start..end {
-            let idx = Board::convert_coordinates_to_index(x, y);
+            let idx = Coordinate::convert_coordinates_to_index(x, y);
             if self.pieces[idx].piece_type != Pieces::Empty {
                 return false;
             }
@@ -359,7 +334,7 @@ impl Board {
         let mut y = from_y as i8 + dy;
 
         while x != to_x as i8 && y != to_y as i8 {
-            let idx = Board::convert_coordinates_to_index(x as u8, y as u8);
+            let idx = Coordinate::convert_coordinates_to_index(x as u8, y as u8);
             if self.pieces[idx].piece_type != Pieces::Empty {
                 return false;
             }
@@ -374,21 +349,6 @@ impl Board {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
-    #[test]
-    fn coordinate_conversion_test () {
-        assert_eq!(Board::convert_coordinates('a', 8), (0, 0, 0));
-        assert_eq!(Board::convert_coordinates('h', 1), (7, 7, 63));
-        assert_eq!(Board::convert_coordinates('c', 3), (2, 5, 42));
-        
-        assert_eq!(Board::convert_index_to_coordinates(0), (0, 0));
-        assert_eq!(Board::convert_index_to_coordinates(63), (7, 7));
-        assert_eq!(Board::convert_index_to_coordinates(42), (2, 5));
-
-        assert_eq!(Board::convert_coordinates_to_index(0, 0), 0);
-        assert_eq!(Board::convert_coordinates_to_index(7, 7), 63);
-        assert_eq!(Board::convert_coordinates_to_index(2, 5), 42);
-    }
     
     #[test]
     fn white_pawn_move_test () {
