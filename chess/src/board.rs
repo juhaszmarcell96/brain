@@ -270,7 +270,7 @@ impl Board {
                     if self.pieces[Board::convert_coordinates_to_index(from_x, from_y - 1)].piece_type == Pieces::Empty { return true; }
                     return false
                 }
-                else if to_piece.is_black() {
+                else if to_piece.is_white() {
                     // move diagonally and capture another piece
                     if to_y == from_y - 1 {
                         if (from_x != 7) && (to_x == from_x + 1) { return true; }
