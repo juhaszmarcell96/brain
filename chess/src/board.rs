@@ -153,6 +153,17 @@ impl Board {
         (y as usize) * 8 + (x as usize)
     }
 
+    pub fn teleport (&mut self, from_col: char, from_row: u8, to_col: char, to_row: u8) {
+        let (_, _, from_index) = Board::convert_coordinates(from_col, from_row);
+        let (_, _, to_index) = Board::convert_coordinates(to_col, to_row);
+        if from_index == to_index { return; }
+        self.pieces[to_index].piece_type = self.pieces[from_index].piece_type;
+        self.pieces[to_index].moved = true;
+        self.pieces[from_index].piece_type = Pieces::Empty;
+        self.pieces[from_index].moved = false;
+        // do not flip turn
+    }
+
     pub fn select (&mut self, col: char, row: u8) {
         let (_, _, index) = Board::convert_coordinates(col, row);
         self.selected = Some(index);
@@ -434,10 +445,8 @@ mod tests {
         //1 ♜   ♝ ♛ ♚ ♝ ♞ ♜ 
         //  a b c d e f g h
         board.move_to('d', 5);
-        board.select('b', 1);
-        board.move_to('b', 5);
-        board.select('f', 8);
-        board.move_to('g', 5);
+        board.teleport('b', 1, 'b', 5);
+        board.teleport('f', 8, 'g', 5);
         board.select('d', 5);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -476,8 +485,7 @@ mod tests {
         //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
         //  a b c d e f g h
         board.move_to('d', 3);
-        board.select('f', 7);
-        board.move_to('f', 4);
+        board.teleport('f', 7, 'f', 4);
         board.select('d', 3);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -514,10 +522,8 @@ mod tests {
         //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
         //  a b c d e f g h
         board.move_to('d', 4);
-        board.select('f', 7);
-        board.move_to('f', 6);
-        board.select('b', 2);
-        board.move_to('b', 3);
+        board.teleport('f', 7, 'f', 6);
+        board.teleport('b', 2, 'b', 3);
         board.select('d', 4);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -555,12 +561,9 @@ mod tests {
         //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
         //  a b c d e f g h
         board.move_to('d', 4);
-        board.select('f', 7);
-        board.move_to('f', 6);
-        board.select('b', 2);
-        board.move_to('b', 3);
-        board.select('h', 7);
-        board.move_to('h', 4);
+        board.teleport('f', 7, 'f', 6);
+        board.teleport('b', 2, 'b', 3);
+        board.teleport('h', 7, 'h', 4);
         board.select('d', 4);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
@@ -608,10 +611,8 @@ mod tests {
         //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
         //  a b c d e f g h
         board.move_to('e', 4);
-        board.select('e', 2);
-        board.move_to('e', 3);
-        board.select('f', 7);
-        board.move_to('f', 5);
+        board.teleport('e', 2, 'e', 3);
+        board.teleport('f', 7, 'f', 5);
         board.select('e', 4);
         for col in "abcdefgh".chars() {
             for row in 1..8 {
