@@ -84,6 +84,7 @@ impl Pieces {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Piece {
     pub piece_type: Pieces,
     pub moved: bool,

@@ -14,6 +14,7 @@
 
 */
 
+#[derive(Debug, Clone, Copy)]
 pub struct Coordinate {
     index: usize
 }
