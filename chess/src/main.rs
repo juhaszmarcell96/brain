@@ -2,6 +2,7 @@ pub mod pieces;
 pub mod board;
 pub mod coordinate;
 pub mod movement;
+pub mod history;
 
 use std::io::{self, Write};
 use regex::Regex;
