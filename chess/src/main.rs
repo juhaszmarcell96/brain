@@ -3,6 +3,7 @@ pub mod board;
 pub mod coordinate;
 pub mod movement;
 pub mod history;
+pub mod rules;
 
 use std::io::{self, Write};
 use regex::Regex;

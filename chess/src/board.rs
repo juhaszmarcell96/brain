@@ -14,6 +14,7 @@
 
 use crate::pieces::{Pieces, Piece};
 use crate::coordinate::Coordinate;
+use crate::rules::Rules;
 
 macro_rules! debug_log {
     ($($arg:tt)*) => {
@@ -112,6 +113,10 @@ impl Board {
         }
     }
 
+    pub fn get_current_setup (&self) -> &[Piece; 64] {
+        &self.pieces
+    }
+
     pub fn draw (&self) {
         for i in 0..8 {
             print!("{} ", 8 - i);
@@ -156,6 +161,38 @@ impl Board {
         // flip the turn -> assume correct usage (move was checked with 'can_move_to' beforehand
         self.flip_turn();
 
+    }
+
+    pub fn make_a_move (&mut self, from_col: char, from_row: u8, to_col: char, to_row: u8) -> bool {
+        let from_coordinate = Coordinate::from_row_col(from_col, from_row);
+        let to_coordinate = Coordinate::from_row_col(to_col, to_row);
+        let from_index = from_coordinate.as_index();
+        let to_index = from_coordinate.as_index();
+        // moving a piece to the same place is invalid
+        if from_index == to_index { return false; }
+        let from_piece = &self.pieces[from_index];
+        let to_piece = &self.pieces[to_index];
+        // an empty piece cannot be moved
+        if from_piece.is_empty() { return false; }
+        // consider the turn, e.g. white piece cannot be moved in a black turn
+        if !self.ignore_turn {
+            if (self.turn == Turn::White) && from_piece.is_black() { return false; }
+            if (self.turn == Turn::Black) && from_piece.is_white() { return false; }
+        }
+        let (from_x, from_y) = from_coordinate.as_x_y();
+        let (to_x, to_y) = from_coordinate.as_x_y();
+        debug_log!("moving from [{};{}] to [{};{}]", from_x, from_y, to_x, to_y);
+        // check if the basic movement is valid
+        if !Rules::is_basic_movement_valid(self, &from_coordinate, &to_coordinate) { return false; }
+
+        // everything checks out -> make the move
+        self.pieces[to_index].piece_type = self.pieces[from_index].piece_type;
+        self.pieces[to_index].moved = true;
+        self.pieces[from_index].piece_type = Pieces::Empty;
+        self.pieces[from_index].moved = false;
+        // flip the turn -> assume correct usage (move was checked with 'can_move_to' beforehand
+        self.flip_turn();
+        return true;
     }
 
     fn flip_turn (&mut self) {
