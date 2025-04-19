@@ -169,14 +169,14 @@ impl Board {
 
     pub fn can_move_to (&self, col: char, row: u8) -> bool {
         let from_index = self.selected.expect("no piece is selected");
-        let (_, _, to_index) = Coordinate::convert_coordinates(col, row);
+        let to_coordinate = Coordinate::from_row_col(col, row);
+        let to_index = to_coordinate.as_index();
         if from_index == to_index { return false; }
         let from_piece = &self.pieces[from_index];
         let to_piece = &self.pieces[to_index];
         let from_x = from_piece.get_x();
         let from_y = from_piece.get_y();
-        let to_x = to_piece.get_x();
-        let to_y = to_piece.get_y();
+        let (to_x, to_y) = to_coordinate.as_x_y();
 
         debug_log!("moving from [{};{}] to [{};{}]", from_x, from_y, to_x, to_y);
 
