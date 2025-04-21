@@ -33,7 +33,6 @@ enum Turn {
 
 pub struct Board {
     pieces: [Piece; 64],
-    ignore_turn: bool,
     turn: Turn
 }
 
@@ -106,7 +105,6 @@ impl Board {
                 Piece::new(Pieces::BlackKnight, 6, 7),
                 Piece::new(Pieces::BlackRook, 7, 7)
             ],
-            ignore_turn: false,
             turn: Turn::White
         }
     }
@@ -157,15 +155,13 @@ impl Board {
         // an empty piece cannot be moved
         if from_piece.is_empty() { return false; }
         // consider the turn, e.g. white piece cannot be moved in a black turn
-        if !self.ignore_turn {
-            if (self.turn == Turn::White) && from_piece.is_black() {
-                debug_log!("cannot move black piece in white turn");
-                return false;
-            }
-            if (self.turn == Turn::Black) && from_piece.is_white() {
-                debug_log!("cannot move white piece in black turn");
-                return false;
-            }
+        if (self.turn == Turn::White) && from_piece.is_black() {
+            debug_log!("cannot move black piece in white turn");
+            return false;
+        }
+        if (self.turn == Turn::Black) && from_piece.is_white() {
+            debug_log!("cannot move white piece in black turn");
+            return false;
         }
         let (from_x, from_y) = from_coordinate.as_x_y();
         let (to_x, to_y) = from_coordinate.as_x_y();
@@ -186,10 +182,6 @@ impl Board {
     fn flip_turn (&mut self) {
         if self.turn == Turn::White { self.turn = Turn::Black; }
         else { self.turn = Turn::White; }
-    }
-
-    pub fn set_ignore_turn (&mut self, ignore: bool) {
-        self.ignore_turn = ignore;
     }
 
 }
