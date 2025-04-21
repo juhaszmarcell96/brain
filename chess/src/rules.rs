@@ -193,6 +193,41 @@ impl Rules {
         true
     }
 
+    pub fn is_castling_valid (board: &Board, from: &Coordinate, to: &Coordinate) -> bool {
+        let from_index = from.as_index();
+        let to_index = to.as_index();
+        if from_index == to_index { return false; }
+        let setup = board.get_current_setup();
+        let from_piece = &setup[from_index];
+        let to_piece = &setup[to_index];
+        let (from_x, from_y) = from.as_x_y();
+        let (to_x, to_y) = to.as_x_y();
+
+        // if either was moved already, castling is not possible
+        if from_piece.moved { return false; }
+        if to_piece.moved { return false; }
+        // if they are not in the same row, catsling is not possible
+        if from_y != to_y { return false; }
+        // if there is some piece between them, castling is not possible
+        if !Rules::is_clear_horizontal(board, from_y, from_x, to_x) { return false; }
+        // if the king is currently under attack, castling is not possible
+        // TODO
+        // castling only works between a king and a rook
+        if (from_piece.piece_type == Pieces::BlackKing) && (to_piece.piece_type == Pieces::BlackRook) {
+            return true;
+        }
+        else if (from_piece.piece_type == Pieces::BlackRook) && (to_piece.piece_type == Pieces::BlackKing) {
+            return true;
+        }
+        else if (from_piece.piece_type == Pieces::WhiteKing) && (to_piece.piece_type == Pieces::WhiteRook) {
+            return true;
+        }
+        else if (from_piece.piece_type == Pieces::WhiteRook) && (to_piece.piece_type == Pieces::WhiteKing) {
+            return true;
+        }
+        false
+    }
+
 }
 
 #[cfg(test)]
