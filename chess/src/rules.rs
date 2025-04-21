@@ -430,4 +430,37 @@ mod tests {
                                                            Coordinate::from_row_col('f', 3),
                                                            Coordinate::from_row_col('f', 4)]));
     }
+    
+    #[test]
+    fn castling_test () {
+        let mut board = Board::new();
+        //8 ♖       ♔ ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6   ♘ ♗ ♕         
+        //5                 
+        //4                 
+        //3                 
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('b', 8, 'b', 6);
+        board.teleport('c', 8, 'c', 6);
+        board.teleport('d', 8, 'd', 6);
+        let from_coord = Coordinate::from_row_col('a', 8);
+        let to_coord = Coordinate::from_row_col('e', 8);
+        assert!(Rules::is_castling_valid(&board, &from_coord, &to_coord));
+        let from_coord = Coordinate::from_row_col('e', 8);
+        let to_coord = Coordinate::from_row_col('a', 8);
+        assert!(Rules::is_castling_valid(&board, &from_coord, &to_coord));
+        // move the king once and back
+        board.teleport('e', 8, 'd', 8);
+        board.teleport('d', 8, 'e', 8);
+        // now castling should not be possible
+        let from_coord = Coordinate::from_row_col('a', 8);
+        let to_coord = Coordinate::from_row_col('e', 8);
+        assert!(!Rules::is_castling_valid(&board, &from_coord, &to_coord));
+        let from_coord = Coordinate::from_row_col('e', 8);
+        let to_coord = Coordinate::from_row_col('a', 8);
+        assert!(!Rules::is_castling_valid(&board, &from_coord, &to_coord));
+    }
 }
