@@ -14,7 +14,7 @@
 
 */
 
-use crate::pieces::{Pieces, Piece};
+use crate::pieces::Pieces;
 use crate::coordinate::Coordinate;
 use crate::board::Board;
 
@@ -193,4 +193,206 @@ impl Rules {
         true
     }
 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn can_only_move_to (board: &Board, from: &Coordinate, tos: Vec<Coordinate>) -> bool {
+        for col in "abcdefgh".chars() {
+            for row in 1..8 {
+                let to_coord = Coordinate::from_row_col(col, row);
+                if tos.contains(&to_coord) {
+                    if !Rules::is_basic_movement_valid(board, &from, &to_coord) { return false; }
+                }
+                else {
+                    if Rules::is_basic_movement_valid(board, &from, &to_coord) { return false; }
+                }
+            }
+        }
+        true
+    }
+
+    #[allow(dead_code)]
+    fn can_move_anywhere (board: &Board, from: &Coordinate) -> bool {
+        for col in "abcdefgh".chars() {
+            for row in 1..8 {
+                let to_coord = Coordinate::from_row_col(col, row);
+                if !Rules::is_basic_movement_valid(board, &from, &to_coord) { return false; }
+            }
+        }
+        true
+    }
+
+    fn cannot_move_anywhere (board: &Board, from: &Coordinate) -> bool {
+        for col in "abcdefgh".chars() {
+            for row in 1..8 {
+                let to_coord = Coordinate::from_row_col(col, row);
+                if Rules::is_basic_movement_valid(board, &from, &to_coord) { return false; }
+            }
+        }
+        true
+    }
+    
+    #[test]
+    fn white_pawn_move_test () {
+        let mut board = Board::new();
+        let from_coord = Coordinate::from_row_col('e', 7);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('e', 6), Coordinate::from_row_col('e', 5)]));
+        board.teleport('e', 7, 'e', 5);
+        let from_coord = Coordinate::from_row_col('e', 5);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('e', 4)]));
+        board.teleport('e', 5, 'e', 3);
+        let from_coord = Coordinate::from_row_col('e', 3);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('d', 2), Coordinate::from_row_col('f', 2)]));
+    }
+    
+    #[test]
+    fn white_rook_move_test () {
+        let mut board = Board::new();
+        let from_coord = Coordinate::from_row_col('a', 8);
+        assert!(cannot_move_anywhere(&board, &from_coord));
+        //8   ♘ ♗ ♕ ♔   ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6                 
+        //5   ♞   ♖     ♗   
+        //4                 
+        //3                 
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜   ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('a', 8, 'd', 5);
+        board.teleport('b', 1, 'b', 5);
+        board.teleport('f', 8, 'g', 5);
+        let from_coord = Coordinate::from_row_col('d', 5);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('d', 6),
+                                                           Coordinate::from_row_col('d', 4),
+                                                           Coordinate::from_row_col('d', 3),
+                                                           Coordinate::from_row_col('d', 2),
+                                                           Coordinate::from_row_col('b', 5),
+                                                           Coordinate::from_row_col('c', 5),
+                                                           Coordinate::from_row_col('e', 5),
+                                                           Coordinate::from_row_col('f', 5)]));
+    }
+    
+    #[test]
+    fn white_knight_move_test () {
+        let mut board = Board::new();
+        let from_coord = Coordinate::from_row_col('b', 8);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('a', 6), Coordinate::from_row_col('c', 6)]));
+        //8 ♖   ♗ ♕ ♔ ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙   ♙ ♙ 
+        //6                 
+        //5                 
+        //4           ♙     
+        //3       ♘         
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('b', 8, 'd', 3);
+        board.teleport('f', 7, 'f', 4);
+        let from_coord = Coordinate::from_row_col('d', 3);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('c', 1),
+                                                           Coordinate::from_row_col('e', 1),
+                                                           Coordinate::from_row_col('b', 2),
+                                                           Coordinate::from_row_col('f', 2),
+                                                           Coordinate::from_row_col('b', 4),
+                                                           Coordinate::from_row_col('c', 5),
+                                                           Coordinate::from_row_col('e', 5)]));
+    }
+    
+    #[test]
+    fn white_bishop_move_test () {
+        let mut board = Board::new();
+        let from_coord = Coordinate::from_row_col('c', 8);
+        assert!(cannot_move_anywhere(&board, &from_coord));
+        //8 ♖ ♘   ♕ ♔ ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙   ♙ ♙ 
+        //6           ♙     
+        //5                 
+        //4       ♗         
+        //3   ♟             
+        //2 ♟   ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('c', 8, 'd', 4);
+        board.teleport('f', 7, 'f', 6);
+        board.teleport('b', 2, 'b', 3);
+        let from_coord = Coordinate::from_row_col('d', 4);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('c', 5),
+                                                           Coordinate::from_row_col('b', 6),
+                                                           Coordinate::from_row_col('e', 5),
+                                                           Coordinate::from_row_col('c', 3),
+                                                           Coordinate::from_row_col('b', 2),
+                                                           Coordinate::from_row_col('a', 1),
+                                                           Coordinate::from_row_col('e', 3),
+                                                           Coordinate::from_row_col('f', 2)]));
+    }
+    
+    #[test]
+    fn white_queen_move_test () {
+        let mut board = Board::new();
+        let from_coord = Coordinate::from_row_col('d', 8);
+        assert!(cannot_move_anywhere(&board, &from_coord));
+        //8 ♖ ♘ ♗   ♔ ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙   ♙   
+        //6           ♙     
+        //5                 
+        //4       ♕       ♙ 
+        //3   ♟             
+        //2 ♟   ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('d', 8, 'd', 4);
+        board.teleport('f', 7, 'f', 6);
+        board.teleport('b', 2, 'b', 3);
+        board.teleport('h', 7, 'h', 4);
+        let from_coord = Coordinate::from_row_col('d', 4);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('c', 5),
+                                                           Coordinate::from_row_col('b', 6),
+                                                           Coordinate::from_row_col('e', 5),
+                                                           Coordinate::from_row_col('c', 3),
+                                                           Coordinate::from_row_col('b', 2),
+                                                           Coordinate::from_row_col('a', 1),
+                                                           Coordinate::from_row_col('e', 3),
+                                                           Coordinate::from_row_col('f', 2),
+                                                           Coordinate::from_row_col('a', 4),
+                                                           Coordinate::from_row_col('b', 4),
+                                                           Coordinate::from_row_col('c', 4),
+                                                           Coordinate::from_row_col('e', 4),
+                                                           Coordinate::from_row_col('f', 4),
+                                                           Coordinate::from_row_col('g', 4),
+                                                           Coordinate::from_row_col('d', 6),
+                                                           Coordinate::from_row_col('d', 5),
+                                                           Coordinate::from_row_col('d', 3),
+                                                           Coordinate::from_row_col('d', 2)]));
+    }
+    
+    #[test]
+    fn white_king_move_test () {
+        let mut board = Board::new();
+        let from_coord = Coordinate::from_row_col('e', 8);
+        assert!(cannot_move_anywhere(&board, &from_coord));
+        //8 ♖ ♘ ♗ ♕   ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙   ♙ ♙ 
+        //6                 
+        //5           ♙     
+        //4         ♔       
+        //3         ♟       
+        //2 ♟ ♟ ♟ ♟   ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('e', 8, 'e', 4);
+        board.teleport('e', 2, 'e', 3);
+        board.teleport('f', 7, 'f', 5);
+        let from_coord = Coordinate::from_row_col('e', 4);
+        assert!(can_only_move_to(&board, &from_coord, vec![Coordinate::from_row_col('e', 5),
+                                                           Coordinate::from_row_col('d', 5),
+                                                           Coordinate::from_row_col('d', 4),
+                                                           Coordinate::from_row_col('d', 3),
+                                                           Coordinate::from_row_col('e', 3),
+                                                           Coordinate::from_row_col('f', 3),
+                                                           Coordinate::from_row_col('f', 4)]));
+    }
 }
