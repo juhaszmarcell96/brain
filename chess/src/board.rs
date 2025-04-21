@@ -168,6 +168,7 @@ impl Board {
         debug_log!("moving from [{};{}] to [{};{}]", from_x, from_y, to_x, to_y);
         // check if the basic movement is valid
         if !Rules::is_basic_movement_valid(self, &from_coordinate, &to_coordinate) { return false; }
+        if !Rules::is_castling_valid(self, &from_coordinate, &to_coordinate) { return false; }
 
         // everything checks out -> make the move
         self.pieces[to_index].piece_type = self.pieces[from_index].piece_type;
