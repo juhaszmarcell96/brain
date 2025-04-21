@@ -26,12 +26,10 @@ fn main() {
             let to_row: u8 = caps[4].parse().unwrap();
 
             //println!("parsed move: from {}{} to {}{}", from_col, from_row, to_col, to_row);
-            chessboard.select(from_col, from_row);
-            if !chessboard.can_move_to(to_col, to_row) {
+            if !chessboard.make_a_move(from_col, from_row, to_col, to_row) {
                 println!("invalid move");
                 continue;
             }
-            chessboard.move_to(to_col, to_row);
             chessboard.draw();
         }
         else {
