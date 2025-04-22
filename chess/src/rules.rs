@@ -228,6 +228,17 @@ impl Rules {
         false
     }
 
+    pub fn is_king_under_attack (board: &Board, black: bool) -> bool {
+        let setup = board.get_current_setup();
+        let king_type = if black { Pieces::BlackKing } else { Pieces::WhiteKing };
+        let king_coord = Coordinate::from_index(setup.iter().position(|piece| piece.piece_type == king_type).expect("king not found..."));
+        for i in 0..setup.len() {
+            let from_coord = Coordinate::from_index(i);
+            if Rules::is_basic_movement_valid(board, &from_coord, &king_coord) { return true }
+        }
+        false
+    }
+
 }
 
 #[cfg(test)]
