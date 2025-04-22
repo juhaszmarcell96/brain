@@ -211,7 +211,7 @@ impl Rules {
         // if there is some piece between them, castling is not possible
         if !Rules::is_clear_horizontal(board, from_y, from_x, to_x) { return false; }
         // if the king is currently under attack, castling is not possible
-        // TODO
+        if Rules::is_king_under_attack(board, from_piece.is_black()) { return false; }
         // castling only works between a king and a rook
         if (from_piece.piece_type == Pieces::BlackKing) && (to_piece.piece_type == Pieces::BlackRook) {
             return true;
@@ -549,5 +549,27 @@ mod tests {
         board.teleport('a', 1, 'd', 4);
         assert!(!Rules::is_king_under_attack(&board, true));
         assert!(!Rules::is_king_under_attack(&board, false));
+    }
+    
+    #[test]
+    fn castling_in_check_test () {
+        let mut board = Board::new();
+        //8 ♖       ♔ ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙   ♙ ♙ ♙ 
+        //6   ♘ ♗ ♕   ♙     
+        //5                 
+        //4                 
+        //3         ♛       
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝   ♚ ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('b', 8, 'b', 6);
+        board.teleport('c', 8, 'c', 6);
+        board.teleport('d', 8, 'd', 6);
+        board.teleport('e', 7, 'f', 6);
+        board.teleport('d', 1, 'e', 3);
+        let from_coord = Coordinate::from_row_col('a', 8);
+        let to_coord = Coordinate::from_row_col('e', 8);
+        assert!(!Rules::is_castling_valid(&board, &from_coord, &to_coord));
     }
 }
