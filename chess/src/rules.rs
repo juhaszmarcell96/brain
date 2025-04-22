@@ -474,4 +474,80 @@ mod tests {
         let to_coord = Coordinate::from_row_col('a', 8);
         assert!(!Rules::is_castling_valid(&board, &from_coord, &to_coord));
     }
+    
+    #[test]
+    fn king_under_attack_test () {
+        let mut board = Board::new();
+        assert!(!Rules::is_king_under_attack(&board, true));
+        assert!(!Rules::is_king_under_attack(&board, false));
+        //8 ♖ ♘ ♗ ♕   ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6                 
+        //5           ♔     
+        //4     ♚           
+        //3                 
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛   ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('e', 8, 'f', 5);
+        board.teleport('e', 1, 'c', 4);
+        assert!(!Rules::is_king_under_attack(&board, true));
+        assert!(!Rules::is_king_under_attack(&board, false));
+        //8 ♖ ♘ ♗ ♕   ♗ ♘ ♖ 
+        //7 ♙   ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6                 
+        //5   ♙       ♔     
+        //4     ♚       ♟   
+        //3                 
+        //2 ♟ ♟ ♟ ♟ ♟ ♟   ♟ 
+        //1 ♜ ♞ ♝ ♛   ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('b', 7, 'b', 5);
+        board.teleport('g', 2, 'g', 4);
+        assert!(Rules::is_king_under_attack(&board, true));
+        assert!(Rules::is_king_under_attack(&board, false));
+        board.teleport('b', 5, 'b', 7);
+        board.teleport('g', 4, 'g', 2);
+        //8 ♖   ♗ ♕   ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6   ♘             
+        //5           ♔     
+        //4     ♚           
+        //3             ♞   
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝ ♛   ♝   ♜ 
+        //  a b c d e f g h
+        board.teleport('b', 8, 'b', 6);
+        board.teleport('g', 1, 'g', 3);
+        assert!(Rules::is_king_under_attack(&board, true));
+        assert!(Rules::is_king_under_attack(&board, false));
+        board.teleport('b', 6, 'b', 8);
+        board.teleport('g', 3, 'g', 1);
+        //8 ♖ ♘ ♗     ♗ ♘ ♖ 
+        //7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6                 
+        //5       ♛   ♔     
+        //4     ♚   ♕       
+        //3                 
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1 ♜ ♞ ♝     ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('d', 8, 'e', 4);
+        board.teleport('d', 1, 'd', 5);
+        assert!(Rules::is_king_under_attack(&board, true));
+        assert!(Rules::is_king_under_attack(&board, false));
+        //8 ♖ ♘ ♗     ♗ ♘   
+        //7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+        //6                 
+        //5       ♛ ♖ ♔     
+        //4     ♚ ♜ ♕       
+        //3                 
+        //2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+        //1   ♞ ♝     ♝ ♞ ♜ 
+        //  a b c d e f g h
+        board.teleport('h', 8, 'e', 5);
+        board.teleport('a', 1, 'd', 4);
+        assert!(!Rules::is_king_under_attack(&board, true));
+        assert!(!Rules::is_king_under_attack(&board, false));
+    }
 }
